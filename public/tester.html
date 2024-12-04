@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jira API Tester</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <h1 class="mb-4">Jira API Tester</h1>
+    
+    <!-- Credentials Form -->
+    <div class="card p-4 mb-4">
+      <h4>Authentication</h4>
+      <form id="auth-form">
+        <div class="mb-3">
+          <label for="baseUrl" class="form-label">Jira Base URL</label>
+          <input type="url" id="baseUrl" class="form-control" placeholder="https://your-jira-instance.atlassian.net" required>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" class="form-control" placeholder="your-email@example.com" required>
+        </div>
+        <div class="mb-3">
+          <label for="apiToken" class="form-label">API Token</label>
+          <input type="password" id="apiToken" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Credentials</button>
+      </form>
+    </div>
+
+    <!-- API Actions -->
+    <div class="card p-4">
+      <h4>API Actions</h4>
+
+      <button class="btn btn-success mb-3" id="fetchProjects">Fetch Projects</button>
+      <button class="btn btn-info mb-3" id="fetchTasks">Fetch Tasks</button>
+      
+      <form id="postCommentForm" class="mb-3">
+        <div class="mb-3">
+          <label for="issueId" class="form-label">Issue ID</label>
+          <input type="text" id="issueId" class="form-control" placeholder="Enter issue ID">
+        </div>
+        <div class="mb-3">
+          <label for="comment" class="form-label">Comment</label>
+          <textarea id="comment" class="form-control" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-warning">Post Comment</button>
+      </form>
+    </div>
+
+    <!-- Results -->
+    <div class="card p-4 mt-4" id="results">
+      <h4>Results</h4>
+      <pre id="resultOutput" class="bg-light p-3 rounded"></pre>
+    </div>
+  </div>
+
+  <script src="tester.js"></script>
+</body>
+</html>
