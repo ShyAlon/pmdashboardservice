@@ -1,0 +1,13 @@
+.avatar-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .avatar-wrapper img {
+    border: 3px solid transparent;
+    transition: border-color 0.3s;
+  }
+  
+  .avatar-wrapper.selected img {
+    border-color: azure;
+  }
