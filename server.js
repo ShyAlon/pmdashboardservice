@@ -217,22 +217,54 @@ app.get('/project-members/:projectId', extractCredentials, async (req, res) => {
     }
 });
 
+function getCustomFieldValue(field) {
+    if (Array.isArray(field) && field[0] && typeof field[0].value !== 'undefined') {
+        return field[0].value;
+    }
+    return "None"; // Default value for missing fields
+}
+
 // Jira API: Fetch tickets for a specific assignee
 app.get('/tickets', extractCredentials, async (req, res) => {
     const { baseUrl, email, apiToken } = req.jiraCredentials;
     const { projectId, assigneeId } = req.query;
 
     try {
-        const response = await axios.get(
-            `${baseUrl}/rest/api/2/search?jql=project=${projectId} AND assignee=${assigneeId}`,
-            { headers: createJiraHeaders({ email, apiToken }) }
-        );
+        const allIssues = [];
+        let startAt = 0;
+        let total = 1;
 
-        const tickets = response.data.issues.map((issue) => ({
-            key: issue.key,
-            summary: issue.fields.summary,
-            url: `${baseUrl}/browse/${issue.key}`,
-        }));
+        // Handle pagination
+        while (startAt < total) {
+            const response = await axios.get(
+                `${baseUrl}/rest/api/2/search?jql=project=${projectId} AND assignee=${assigneeId}&startAt=${startAt}&maxResults=50`,
+                { headers: createJiraHeaders({ email, apiToken }) }
+            );
+            const { issues, total: totalResults } = response.data;
+            allIssues.push(...issues);
+            total = totalResults;
+            startAt += 50;
+        }
+
+        const tickets = allIssues.map((issue) => {
+            const fields = issue.fields;
+            return {
+                key: issue.key,
+                summary: fields.summary,
+                url: `${baseUrl}/browse/${issue.key}`,
+                cycle: getCustomFieldValue(fields.customfield_12293),
+                linkedIssues: fields.issuelinks
+                    ? fields.issuelinks.map((link) => {
+                        const linked = link.inwardIssue || link.outwardIssue;
+                        return linked ? { key: linked.key, url: `${baseUrl}/browse/${linked.key}` } : null;
+                    }).filter(Boolean)
+                    : [],
+                shapeUpDocument: getCustomFieldValue(fields.customfield_12291),
+                techArea: getCustomFieldValue(fields.customfield_12290),
+                outcome: getCustomFieldValue(fields.customfield_12272),
+                team: getCustomFieldValue(fields.customfield_12277),
+            };
+        });
 
         res.json(tickets);
     } catch (error) {
