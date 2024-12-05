@@ -224,49 +224,153 @@ function getCustomFieldValue(field) {
     return "None"; // Default value for missing fields
 }
 
-// Jira API: Fetch tickets for a specific assignee
+// Helper: Fetch multiple issues in bulk
+async function fetchIssues(issueKeys, baseUrl, credentials) {
+    const chunkSize = 50; // Jira's API limit for bulk requests
+    const chunks = [];
+
+    for (let i = 0; i < issueKeys.length; i += chunkSize) {
+        chunks.push(issueKeys.slice(i, i + chunkSize));
+    }
+
+    const results = [];
+    for (const chunk of chunks) {
+        const response = await axios.get(
+            `${baseUrl}/rest/api/2/search?jql=key in (${chunk.join(',')})`,
+            {
+                headers: createJiraHeaders(credentials),
+            }
+        );
+        results.push(...response.data.issues);
+    }
+
+    return results;
+}
+
+const deliverableChildrenCache = {}; // Cache for deliverable children
+
+// Helper function to fetch children of an epic
+const fetchDeliverableChildren = async (epicKey, baseUrl, credentials) => {
+    if (deliverableChildrenCache[epicKey]) {
+        return deliverableChildrenCache[epicKey]; // Return cached data if available
+    }
+
+    try {
+        const response = await axios.get(
+            `${baseUrl}/rest/api/2/search?jql="epic link"=${epicKey}`,
+            {
+                headers: createJiraHeaders(credentials),
+            }
+        );
+
+        const children = response.data.issues || [];
+        deliverableChildrenCache[epicKey] = children; // Cache the result
+        return children;
+    } catch (error) {
+        console.error(`Failed to fetch children for epic ${epicKey}`, error);
+        return [];
+    }
+};
+
+// Enhanced /tickets endpoint
+function determineCondition(linkedIssues) {
+    if (!linkedIssues.length) return 1; // No linked epic
+
+    for (const issue of linkedIssues) {
+        if (issue.children?.length) {
+            const statuses = issue.children.map((child) => child.status);
+
+            if (statuses.includes('Selected for Development') || statuses.includes('Backlog')) {
+                return 3; // Children contain "Selected for Development" or "Backlog"
+            }
+
+            if (statuses.every((status) => ['In Progress', 'Code Review', 'Ready for Release', 'Done'].includes(status))) {
+                return statuses.every((status) => ['Ready for Release', 'Done'].includes(status))
+                    ? 6 // Only "Ready for Release" or "Done"
+                    : 5; // Only "In Progress", "Code Review", "Ready for Release", or "Done"
+            }
+        }
+    }
+
+    return 2; // Linked epic exists, but no children
+}
+
 app.get('/tickets', extractCredentials, async (req, res) => {
     const { baseUrl, email, apiToken } = req.jiraCredentials;
     const { projectId, assigneeId } = req.query;
 
     try {
-        const allIssues = [];
-        let startAt = 0;
-        let total = 1;
+        const response = await axios.get(
+            `${baseUrl}/rest/api/2/search?jql=project=${projectId} AND assignee=${assigneeId}`,
+            { headers: createJiraHeaders({ email, apiToken }) }
+        );
 
-        // Handle pagination
-        while (startAt < total) {
-            const response = await axios.get(
-                `${baseUrl}/rest/api/2/search?jql=project=${projectId} AND assignee=${assigneeId}&startAt=${startAt}&maxResults=50`,
-                { headers: createJiraHeaders({ email, apiToken }) }
-            );
-            const { issues, total: totalResults } = response.data;
-            allIssues.push(...issues);
-            total = totalResults;
-            startAt += 50;
-        }
+        const tickets = response.data.issues;
 
-        const tickets = allIssues.map((issue) => {
-            const fields = issue.fields;
-            return {
-                key: issue.key,
-                summary: fields.summary,
-                url: `${baseUrl}/browse/${issue.key}`,
-                cycle: getCustomFieldValue(fields.customfield_12293),
-                linkedIssues: fields.issuelinks
-                    ? fields.issuelinks.map((link) => {
-                        const linked = link.inwardIssue || link.outwardIssue;
-                        return linked ? { key: linked.key, url: `${baseUrl}/browse/${linked.key}` } : null;
-                    }).filter(Boolean)
-                    : [],
-                shapeUpDocument: getCustomFieldValue(fields.customfield_12291),
-                techArea: getCustomFieldValue(fields.customfield_12290),
-                outcome: getCustomFieldValue(fields.customfield_12272),
-                team: getCustomFieldValue(fields.customfield_12277),
-            };
+        const linkedIssueKeys = tickets.flatMap((ticket) =>
+            (ticket.fields.issuelinks || [])
+                .map((link) => (link.inwardIssue || link.outwardIssue)?.key)
+                .filter(Boolean)
+        );
+
+        const linkedIssuesDetails = await fetchIssues(linkedIssueKeys, baseUrl, {
+            email,
+            apiToken,
         });
 
-        res.json(tickets);
+        const ticketDetails = await Promise.all(
+            tickets.map(async (ticket) => {
+                const linkedIssues = await Promise.all(
+                    (ticket.fields.issuelinks || [])
+                        .map(async (link) => {
+                            const linkedKey = (link.inwardIssue || link.outwardIssue)?.key;
+                            const linkedIssue = linkedIssuesDetails.find(
+                                (issue) => issue.key === linkedKey
+                            );
+
+                            if (linkedIssue && linkedIssue.fields.issuetype.name === 'Epic') {
+                                const children = await fetchDeliverableChildren(
+                                    linkedKey,
+                                    baseUrl,
+                                    { email, apiToken }
+                                );
+                                return {
+                                    key: linkedKey,
+                                    url: `${baseUrl}/browse/${linkedKey}`, // Include the Jira URL for linking
+                                    status: linkedIssue.fields.status.name,
+                                    children: children.map((child) => ({
+                                        key: child.key,
+                                        status: child.fields.status.name,
+                                    })),
+                                };
+                            }
+
+                            return linkedIssue
+                                ? {
+                                    key: linkedKey,
+                                    status: linkedIssue.fields.status.name,
+                                }
+                                : null;
+                        })
+                        .filter(Boolean)
+                );
+
+                return {
+                    key: ticket.key,
+                    summary: ticket.fields.summary,
+                    url: `${baseUrl}/browse/${ticket.key}`,
+                    cycle: getCustomFieldValue(ticket.fields.customfield_12293),
+                    linkedIssues,
+                    condition: determineCondition(linkedIssues), // Add condition score
+                    shapeUpDocument: getCustomFieldValue(ticket.fields.customfield_12291),
+                    techArea: getCustomFieldValue(ticket.fields.customfield_12290),
+                    outcome: getCustomFieldValue(ticket.fields.customfield_12272),
+                    team: getCustomFieldValue(ticket.fields.customfield_12277),
+                };
+            })
+        );
+
+        res.json(ticketDetails);
     } catch (error) {
         console.error('Error fetching tickets:', error.message);
         res.status(error.response?.status || 500).json({ error: error.message });

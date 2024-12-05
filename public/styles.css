@@ -11,3 +11,88 @@
   .avatar-wrapper.selected img {
     border-color: azure;
   }
+
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    padding: 0.5rem 0;
+    margin: 0;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
+  }
+  
+  .dropdown-menu.show {
+    display: block;
+  }
+  
+  .dropdown-item {
+    padding: 0.25rem 1rem;
+    color: #212529;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+  }
+
+  /* Table styles */
+.table {
+  border-collapse: separate;
+  border-spacing: 0 8px; /* Add spacing between rows for rounded borders */
+  width: 100%;
+  background-color: transparent; /* Ensure the table background is clear */
+}
+
+.table tbody tr {
+  background-color: #f8f9fa; /* Light gray background for rows */
+  border-radius: 8px; /* Rounded corners for rows */
+  overflow: hidden; /* Ensures content stays within the rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for rows */
+  transition: transform 0.2s ease, background-color 0.2s ease; /* Smooth transitions */
+}
+
+.table tbody tr:hover {
+  transform: scale(1.02); /* Slight zoom on hover */
+  background-color: #e9ecef; /* Slightly darker gray on hover */
+}
+
+.table td,
+.table th {
+  padding: 12px 16px; /* Add padding inside cells */
+  vertical-align: middle;
+  text-align: left;
+}
+
+.table th {
+  font-weight: bold; /* Make header bold */
+  background-color: #343a40; /* Dark gray background for header */
+  color: #ffffff; /* White text for header */
+  border-bottom: 2px solid #dee2e6; /* Slight border under header */
+}
+
+.table td:first-child,
+.table th:first-child {
+  border-top-left-radius: 8px; /* Rounded corners for the first column */
+  border-bottom-left-radius: 8px;
+}
+
+.table td:last-child,
+.table th:last-child {
+  border-top-right-radius: 8px; /* Rounded corners for the last column */
+  border-bottom-right-radius: 8px;
+}
+
+/* Table Header Styles */
+.table th {
+  font-weight: bold; /* Make header text bold */
+  background-color: #343a40; /* Dark gray background for header */
+  color: #ffffff; /* White text for header */
+  border-bottom: 2px solid #dee2e6; /* Add a bottom border for separation */
+  position: sticky; /* Ensure the header remains visible when scrolling */
+  top: 0; /* Required for sticky positioning */
+  z-index: 2; /* Ensure it stays above other rows */
+}

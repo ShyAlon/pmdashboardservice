@@ -6,12 +6,22 @@ export function verifyCredentials(credentials) {
       email: credentials.email,
       apitoken: credentials.apiToken,
     },
-  })
-    .then((response) => response.ok)
-    .catch((error) => {
-      console.error('Error verifying credentials:', error);
-      return false;
-    });
+  });
+}
+
+export async function getUser(credentials) {
+  const response = await fetch(`/user`, {
+    headers: {
+      'Content-Type': 'application/json',
+      baseurl: credentials.baseUrl,
+      email: credentials.email,
+      apitoken: credentials.apiToken,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('Failed to user');
+  }
+  return response.json();
 }
 
 export function fetchWithCredentials(url) {
