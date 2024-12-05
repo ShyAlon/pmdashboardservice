@@ -32,13 +32,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       avatarElement.src = user.avatarUrl;
       avatarElement.alt = user.displayName || 'User Avatar';
       avatarElement.classList.remove('d-none'); // Ensure the avatar is visible
+      // avatarElement.addEventListener('click', showAvatarOptions);
     } else {
       console.error('Avatar URL is missing from user data.');
     }
     credentialsForm.classList.add('d-none');
-    const mainProject = selectedProjectId || JSON.parse(localStorage.getItem('mainProject'));
-    if (mainProject) {
-      const mainProjectId = mainProject.id
+    const mainProjectId = selectedProjectId || JSON.parse(localStorage.getItem('mainProject'));
+    if (mainProjectId) {
       const members = await fetchProjectMembers(mainProjectId);
       projectUsersSection.classList.remove('d-none');
       displayProjectMembers(members, projectUsersRow, (accountId, displayName) => {
@@ -84,6 +84,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+function showAvatarOptions() {
+  const avatarOptions = document.getElementById('avatarOptions');
+  avatarOptions.classList.toggle('d-none'); // Toggle visibility of the dropdown
+
+  // Position the dropdown below the avatar
+  const avatar = document.getElementById('avatar');
+  const rect = avatar.getBoundingClientRect();
+  avatarOptions.style.top = `${rect.bottom + window.scrollY}px`;
+  avatarOptions.style.left = `${rect.left + window.scrollX}px`;
+}
+
 
 function setMainProject(projectId, projectName) {
   const mainProject = { id: projectId, name: projectName };
@@ -112,4 +123,28 @@ function renderProjects(projects, container) {
       setMainProject(projectId, projectName);
     });
   });
+}
+
+window.showAvatarOptions = function() {
+  const avatarOptions = document.getElementById('avatarOptions');
+  avatarOptions.classList.toggle('d-none');
+
+  const avatar = document.getElementById('avatar');
+  const rect = avatar.getBoundingClientRect();
+
+  avatarOptions.style.top = `${rect.bottom + window.scrollY}px`;
+  avatarOptions.style.left = `${rect.left + window.scrollX - 100}px`;
+
+  avatarOptions.style.zIndex = '9999'; // Ensure it appears above other elements
+  avatarOptions.style.display = avatarOptions.classList.contains('d-none')
+    ? 'none'
+    : 'block'; // Ensure visibility
+}
+
+window.deleteAllData = function() {
+  if (confirm('Are you sure you want to delete all locally stored data? This will restart the app.')) {
+    localStorage.clear(); // Clear all data from localStorage
+    sessionStorage.clear(); // Optional: Clear sessionStorage if used
+    location.reload(); // Reload the page to restart the app
+  }
 }

@@ -139,7 +139,68 @@ function renderTableRows(tickets, tableBody) {
         <td style="color: ${textColor};">${ticket.techArea || 'None'}</td>
         <td style="color: ${textColor};">${ticket.outcome || 'None'}</td>
         <td style="color: ${textColor};">${ticket.team || 'None'}</td>
+        <td>
+          <button class="btn btn-link task-btn">
+            ${ticket.tasks.length}
+          </button>
+        </td>
+        <td>
+          <button class="btn btn-link risk-btn">
+            ${ticket.risks.length}
+          </button>
+        </td>
       </tr>`;
     })
     .join('');
+
+  addEventListenersToRows(tickets);
+}
+
+function addEventListenersToRows(tickets) {
+  const tableBody = document.getElementById('ticketsTableBody');
+
+  console.log("addEventListenersToRows");
+
+  // Add click event listener for task buttons
+  tableBody.querySelectorAll('.task-btn').forEach((button, index) => {
+    button.addEventListener('click', () => {
+      showDialog('tasks', tickets[index].tasks);
+    });
+  });
+
+  // Add click event listener for risk buttons
+  tableBody.querySelectorAll('.risk-btn').forEach((button, index) => {
+    button.addEventListener('click', () => {
+      showDialog('risks', tickets[index].risks);
+    });
+  });
+
+  const closeButton = document.getElementById('closeDialogButton');
+  closeButton.addEventListener('click', closeDialog);
+}
+
+function showDialog(type, items) {
+  const dialog = document.getElementById('detailsDialog');
+  const title = document.getElementById('detailsTitle');
+  const list = document.getElementById('detailsList');
+
+  // Set title
+  const titleText = `${type.charAt(0).toUpperCase() + type.slice(1)} Details`;
+  title.textContent = titleText;
+  // Populate list with color-coded items
+  list.innerHTML = items
+    .map(
+      (item) =>
+        `<li class="${item.priority.toLowerCase()}">
+          <strong>${item.priority.toUpperCase()}</strong>: ${item.text}
+        </li>`
+    )
+    .join('');
+
+  dialog.classList.remove('d-none'); // Show the dialog
+}
+
+function closeDialog() {
+  const dialog = document.getElementById('detailsDialog');
+  dialog.classList.add('d-none'); // Hide the dialog
 }

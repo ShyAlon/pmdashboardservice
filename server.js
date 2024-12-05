@@ -295,6 +295,28 @@ function determineCondition(linkedIssues) {
     return 2; // Linked epic exists, but no children
 }
 
+function parseTasksAndRisks(comments) {
+    const tasks = [];
+    const risks = [];
+    const levels = ['low', 'medium', 'high', 'critical'];
+
+    comments.forEach((comment) => {
+        const match = comment.body.match(/<(task|risk)> <(low|medium|high|critical)>: (.+)/i);
+        if (match) {
+            const [, type, priority, text] = match;
+            const entry = { priority, text };
+            if (type.toLowerCase() === 'task') {
+                tasks.push(entry);
+            } else if (type.toLowerCase() === 'risk') {
+                risks.push(entry);
+            }
+        }
+    });
+
+    return { tasks, risks };
+}
+
+
 app.get('/tickets', extractCredentials, async (req, res) => {
     const { baseUrl, email, apiToken } = req.jiraCredentials;
     const { projectId, assigneeId } = req.query;
@@ -320,6 +342,12 @@ app.get('/tickets', extractCredentials, async (req, res) => {
 
         const ticketDetails = await Promise.all(
             tickets.map(async (ticket) => {
+                const commentsResponse = await axios.get(
+                    `${baseUrl}/rest/api/2/issue/${ticket.key}/comment`,
+                    { headers: createJiraHeaders({ email, apiToken }) }
+                );
+
+                const { tasks, risks } = parseTasksAndRisks(commentsResponse.data.comments || []);
                 const linkedIssues = await Promise.all(
                     (ticket.fields.issuelinks || [])
                         .map(async (link) => {
@@ -366,6 +394,8 @@ app.get('/tickets', extractCredentials, async (req, res) => {
                     techArea: getCustomFieldValue(ticket.fields.customfield_12290),
                     outcome: getCustomFieldValue(ticket.fields.customfield_12272),
                     team: getCustomFieldValue(ticket.fields.customfield_12277),
+                    tasks,
+                    risks,
                 };
             })
         );

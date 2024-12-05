@@ -1,17 +1,17 @@
 import { fetchWithCredentials } from "./credentials.js";
 
 export async function fetchProjectMembers(projectId) {
-    const response = await fetchWithCredentials(`/project-members/${projectId}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch project members');
-    }
-    return response.json();
+  const response = await fetchWithCredentials(`/project-members/${projectId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch project members');
   }
-  
-  export function displayProjectMembers(members, container, onSelectMember) {
-    container.innerHTML = members
-      .map(
-        (member) => `
+  return response.json();
+}
+
+export function displayProjectMembers(members, container, onSelectMember) {
+  container.innerHTML = members
+    .map(
+      (member) => `
         <div
           class="me-3 text-center avatar-wrapper"
           data-account-id="${member.accountId}"
@@ -25,15 +25,15 @@ export async function fetchProjectMembers(projectId) {
           />
           <div>${member.name}</div>
         </div>`
-      )
-      .join('');
-  
-    // Add click event listeners
-    container.querySelectorAll('.avatar-wrapper').forEach((avatar) => {
-      avatar.addEventListener('click', () => {
-        const accountId = avatar.getAttribute('data-account-id');
-        const displayName = avatar.getAttribute('data-display-name');
-        onSelectMember(accountId, displayName);
-      });
+    )
+    .join('');
+
+  // Add click event listeners
+  container.querySelectorAll('.avatar-wrapper').forEach((avatar) => {
+    avatar.addEventListener('click', () => {
+      const accountId = avatar.getAttribute('data-account-id');
+      const displayName = avatar.getAttribute('data-display-name');
+      onSelectMember(accountId, displayName);
     });
-  }
+  });
+}

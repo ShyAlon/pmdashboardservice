@@ -1,98 +1,167 @@
 .avatar-wrapper {
-    position: relative;
-    display: inline-block;
-  }
-  
-  .avatar-wrapper img {
-    border: 3px solid transparent;
-    transition: border-color 0.3s;
-  }
-  
-  .avatar-wrapper.selected img {
-    border-color: azure;
-  }
+  position: relative;
+  display: inline-block;
+}
 
-  .dropdown-menu {
-    display: none;
-    position: absolute;
-    z-index: 1000;
-    padding: 0.5rem 0;
-    margin: 0;
-    background-color: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 0.25rem;
-  }
-  
-  .dropdown-menu.show {
-    display: block;
-  }
-  
-  .dropdown-item {
-    padding: 0.25rem 1rem;
-    color: #212529;
-    text-decoration: none;
-    display: block;
-  }
-  
-  .dropdown-item:hover {
-    background-color: #f8f9fa;
-    color: #212529;
-  }
+.avatar-wrapper img {
+  border: 3px solid transparent;
+  transition: border-color 0.3s;
+}
 
-  /* Table styles */
+.avatar-wrapper.selected img {
+  border-color: azure;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  z-index: 1000;
+  padding: 0.5rem 0;
+  margin: 0;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-item {
+  padding: 0.25rem 1rem;
+  color: #212529;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Table styles */
 .table {
   border-collapse: separate;
-  border-spacing: 0 8px; /* Add spacing between rows for rounded borders */
+  border-spacing: 0 8px;
+  /* Add spacing between rows for rounded borders */
   width: 100%;
-  background-color: transparent; /* Ensure the table background is clear */
+  background-color: transparent;
+  /* Ensure the table background is clear */
 }
 
 .table tbody tr {
-  background-color: #f8f9fa; /* Light gray background for rows */
-  border-radius: 8px; /* Rounded corners for rows */
-  overflow: hidden; /* Ensures content stays within the rounded corners */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for rows */
-  transition: transform 0.2s ease, background-color 0.2s ease; /* Smooth transitions */
+  background-color: #f8f9fa;
+  /* Light gray background for rows */
+  border-radius: 8px;
+  /* Rounded corners for rows */
+  overflow: hidden;
+  /* Ensures content stays within the rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow for rows */
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  /* Smooth transitions */
 }
 
 .table tbody tr:hover {
-  transform: scale(1.02); /* Slight zoom on hover */
-  background-color: #e9ecef; /* Slightly darker gray on hover */
+  transform: scale(1.02);
+  /* Slight zoom on hover */
+  background-color: #e9ecef;
+  /* Slightly darker gray on hover */
 }
 
 .table td,
 .table th {
-  padding: 12px 16px; /* Add padding inside cells */
+  padding: 12px 16px;
+  /* Add padding inside cells */
   vertical-align: middle;
   text-align: left;
 }
 
 .table th {
-  font-weight: bold; /* Make header bold */
-  background-color: #343a40; /* Dark gray background for header */
-  color: #ffffff; /* White text for header */
-  border-bottom: 2px solid #dee2e6; /* Slight border under header */
+  font-weight: bold;
+  /* Make header bold */
+  background-color: #343a40;
+  /* Dark gray background for header */
+  color: #ffffff;
+  /* White text for header */
+  border-bottom: 2px solid #dee2e6;
+  /* Slight border under header */
 }
 
 .table td:first-child,
 .table th:first-child {
-  border-top-left-radius: 8px; /* Rounded corners for the first column */
+  border-top-left-radius: 8px;
+  /* Rounded corners for the first column */
   border-bottom-left-radius: 8px;
 }
 
 .table td:last-child,
 .table th:last-child {
-  border-top-right-radius: 8px; /* Rounded corners for the last column */
+  border-top-right-radius: 8px;
+  /* Rounded corners for the last column */
   border-bottom-right-radius: 8px;
 }
 
 /* Table Header Styles */
 .table th {
-  font-weight: bold; /* Make header text bold */
-  background-color: #343a40; /* Dark gray background for header */
-  color: #ffffff; /* White text for header */
-  border-bottom: 2px solid #dee2e6; /* Add a bottom border for separation */
-  position: sticky; /* Ensure the header remains visible when scrolling */
-  top: 0; /* Required for sticky positioning */
-  z-index: 2; /* Ensure it stays above other rows */
+  font-weight: bold;
+  /* Make header text bold */
+  background-color: #343a40;
+  /* Dark gray background for header */
+  color: #ffffff;
+  /* White text for header */
+  border-bottom: 2px solid #dee2e6;
+  /* Add a bottom border for separation */
+  position: sticky;
+  /* Ensure the header remains visible when scrolling */
+  top: 0;
+  /* Required for sticky positioning */
+  z-index: 2;
+  /* Ensure it stays above other rows */
+}
+
+.modal {
+  display: block;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 2px solid #ccc;
+  padding: 20px;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 75%;
+  height: 75%;
+  border-radius: 10px;
+}
+
+.modal.d-none {
+  display: none;
+}
+
+.modal-content ul li {
+  padding: 5px;
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.modal-content ul li.low {
+  background-color: #d4edda;
+  /* Green */
+}
+
+.modal-content ul li.medium {
+  background-color: #fff3cd;
+  /* Yellow */
+}
+
+.modal-content ul li.high {
+  background-color: #f8d7da;
+  /* Orange */
+}
+
+.modal-content ul li.critical {
+  background-color: #f5c6cb;
+  /* Red */
 }
